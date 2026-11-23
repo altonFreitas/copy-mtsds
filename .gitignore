@@ -9,3 +9,16 @@ src/referencia.bib
 src/Runbook_Grupo5_v2.1.md
 .DS_Store
 
+# Maven builds
+target/
+*.class
+*.jar
+*.war
+
+# IntelliJ / VS Code
+*.iml
+.vscode/
+
+# macOS
+**/.DS_Store
+

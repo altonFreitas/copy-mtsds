@@ -1,0 +1,33 @@
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+HELP.md
+
+# Logs
+logs/
+*.log
+
+# Segredos locais (o modelo está em .env.exemplo)
+.env
+
+# VS Code: partilham-se só estes três ficheiros
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+
+# Outros editores
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.factorypath
+
+# Máquina virtual
+.vagrant/
+*.ova
+
+# Sistema
+.DS_Store
+Thumbs.db

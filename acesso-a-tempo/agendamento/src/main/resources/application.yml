@@ -1,0 +1,75 @@
+# Configuração comum. Perfis: dev (por omissão, H2 em memória), docker e k8s (PostgreSQL), eureka (registo no Eureka).
+server:
+  port: ${PORT:8082}
+
+spring:
+  application:
+    name: agendamento
+  profiles:
+    default: dev
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+  data:
+    web:
+      pageable:
+        default-page-size: 20
+        max-page-size: 100
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: ${RABBITMQ_USER:acesso}
+    password: ${RABBITMQ_PASSWORD:Grupo5}
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+# Sem Eureka por omissão: a gateway usa endereços fixos. O perfil eureka
+# liga o registo, para a demonstração.
+eureka:
+  client:
+    enabled: false
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+
+# Só health e metrics expostos (slide 02 avisa que expor tudo é um risco)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:agendamento_db;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker,k8s
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/agendamento_db}
+    username: ${DB_USER:agendamento}
+    password: ${DB_PASSWORD}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: eureka
+eureka:
+  client:
+    enabled: true

@@ -1,0 +1,24 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: eureka
+
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:localhost}
+  client:
+    # O servidor não se regista nem lê o registo de si próprio (slide 04)
+    register-with-eureka: false
+    fetch-registry: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true

@@ -1,0 +1,165 @@
+RELATÓRIO FINAL: ACESSO A TEMPO
+Métodos e Técnicas de Suporte ao Desenvolvimento de Software, 2026/2027
+Grupo 5: Alton Freitas, Avelino Almeida, Nuno Silva, Pedro Leite
+
+COMO USAR ESTE FICHEIRO
+- Rascunho comum do relatório. No fim é passado para .docx (deixamos o LaTeX).
+- Cada um escreve nas secções que tem como responsável e atualiza quando o código muda.
+- As notas já escritas são ponto de partida: quem herda a secção completa e corrige.
+- Divisão: Avelino (5, 6, 7.1, Anexo C); Nuno (2, 4, 8); Alton (3, 6.4, 12, Anexo B); Pedro (1, 11, 13.2, Anexo A); cada um os seus serviços em 7.2, 9 e 10; todos a 13 e referências.
+- Notas curtas chegam: frases soltas, decisões e porquê, números. O texto final escreve-se no .docx.
+- Figuras: indicar o ficheiro em docs/ (por exemplo [FIGURA: docs/arquitetura.png]).
+- Sem travessões duplos. Português de Portugal.
+- Entra por PR como documentação: o autor faz o merge logo.
+
+ESTRUTURA (segue o relatório de referência do ano passado, adaptada ao nosso projeto)
+
+==================================================================
+1. INTRODUÇÃO (Pedro)
+==================================================================
+1.1 Contextualização
+- UC MTSDS, ESTG. Tema: acesso à primeira consulta hospitalar e cumprimento do TMRG (Portaria 153/2017, Lei 15/2014).
+- ULS fictícia (ULS Lusitânia). 450 mil utentes, 180 mil primeiras consultas por ano, 60 especialidades.
+1.2 Objetivos
+- Passar de um cumprimento descoberto no fim do mês para um cumprimento acompanhado todos os dias.
+- Aplicar microserviços, DDD, mensagens assíncronas e Kubernetes.
+1.3 Estrutura do relatório
+
+==================================================================
+2. ÂMBITO (Nuno)
+==================================================================
+2.1 Âmbito funcional
+- Referenciação e triagem; lista de espera; prazos TMRG e alertas; marcação automática por prioridade;
+  agendas e vagas; tratamento do incumprimento por níveis; histórico e auditoria; avisos ao utente.
+2.2 Fora de âmbito
+- Interface gráfica (atores simulados com Postman); autenticação real (cabeçalho X-Utilizador);
+  faturação e monólito legado (decisão de 19/11); registo de acessos aos dados do utente (RF13).
+2.3 Fases
+- Fase 1 garantida, Fase 2 planeada, Fase 3 se houver tempo (Runbook_Grupo5_v2.2, secção 17).
+
+==================================================================
+3. METODOLOGIA (Alton)
+==================================================================
+- Runbook do grupo como contexto comum; runbook por parte com passos e estado.
+- GitHub: branch por tarefa, PR com revisão de outro elemento, commits pequenos, CI com ./mvnw verify.
+- Reunião com os docentes a 19/11 e decisões tomadas a seguir (nomes ubíquos, filas, Minikube sem Eureka, sem VM).
+- Acompanhamento diário no grupo (feito, a seguir, bloqueios).
+
+==================================================================
+4. DOMÍNIO (DDD ESTRATÉGICO) (Nuno, com todos)
+==================================================================
+4.1 Linguagem ubíqua
+- Termos: pedido, triagem, episódio, data-limite, vaga, marcação, falta, incumprimento, caso.
+- Nomes revistos a 19/11: tmrg passa a gestao-acesso (SIGA SNS); incumprimento passa a garantia-acesso
+  (Lei 15/2014, direito do utente); indicadores passa a historico. Os outros 6 já eram linguagem do negócio.
+- Número único: episodioId igual a pedidoId do princípio ao fim (numa ULS, centro de saúde e hospital são a mesma organização).
+4.2 Subdomínios e contextos limitados
+- Principal: gestão do acesso (lista-espera, gestao-acesso), garantia do acesso.
+- Suporte: referenciação, agendamento, histórico. Genérico: utentes, notificações.
+4.3 Mapa de contexto
+- [FIGURA: docs/arquitetura.png] Customer/Supplier, Partnership, ACL, Conformist, OHS.
+4.4 Endpoints
+- Resumo aqui; detalhe no Anexo A e no Swagger de cada serviço.
+
+==================================================================
+5. REGRAS DE NEGÓCIO (Avelino)
+==================================================================
+- Prazos 30/60/120 dias seguidos desde o registo do pedido; alerta aos 75% (22, 45, 90 dias, arredondado para baixo).
+- R1 a R8 (R8: marcação automática por data-limite mais próxima; empate pelo pedido mais antigo).
+- Regras em tabela com versões e data de vigência: muda-se a portaria sem republicar.
+- Estados do episódio e transições (ver capítulo 9).
+
+==================================================================
+6. INFRAESTRUTURA (Avelino; 6.4 Alton)
+==================================================================
+6.1 Kubernetes (Minikube)
+- Deployment e Service por serviço; gateway NodePort; ConfigMap e Secret; /actuator/health.
+- PostgreSQL e RabbitMQ fora do cluster, em Docker Compose.
+6.2 Descoberta de serviços
+- No Minikube, Services do Kubernetes. Eureka só numa demonstração (utentes com 2 instâncias), nunca ao mesmo tempo.
+- No desenvolvimento, URL fixos (perfil local).
+6.3 Comunicação síncrona
+- Uma só chamada HTTP entre serviços: notificacoes para utentes (OpenFeign).
+6.4 Comunicação assíncrona (Alton)
+- TopicExchange acesso.eventos; uma fila por consumidor; DLX e DLQ; 3 tentativas; reenvio diário até 3 dias; fila de paradas.
+- Idempotência: eventoId gravado na mesma transação da alteração.
+- Cópias locais alimentadas por eventos (NUS na referenciação; vagas na gestão do acesso).
+6.5 API Gateway e segurança
+- Entrada única; X-Utilizador com 401/403 por papel; traceId gerado na gateway.
+
+==================================================================
+7. ARQUITETURA DOS MICROSERVIÇOS
+==================================================================
+7.1 Visão geral [FIGURA: docs/arquitetura.png] (Avelino)
+7.2 Descrição de cada microserviço (cada responsável escreve o seu)
+- referenciacao (Nuno)
+- lista-espera (Nuno)
+- gestao-acesso (Avelino): pivô; prazos, alarmes, relógio de demonstração, marcação automática.
+  Reserva a vaga ao decidir; confirma com consulta.agendada; liberta reservas em conflito.
+  GET /prazos/{episodioId}: datas, dias e % consumidos e situação, calculados para a data do relógio (não só o campo guardado).
+  Episódio encerrado: conta até ao dia do fecho. INCUMPRIDO gravado mantém-se, mesmo com o relógio reposto.
+- agendamento (Avelino): agendas e vagas; vaga única garantida pelo estado da vaga e @Version (bloqueio otimista);
+  409 VAGA_OCUPADA e EPISODIO_JA_MARCADO; marcação manual pontual.
+- garantia-acesso (Alton)
+- historico (Alton)
+- utentes (Pedro)
+- notificacoes (Pedro)
+Para cada um: responsabilidade, o que guarda, endpoints, eventos publicados e consumidos, decisões.
+
+==================================================================
+8. PROCESSOS DE NEGÓCIO (Nuno)
+==================================================================
+- Caso da D. Maria de ponta a ponta (Runbook_Grupo5_v2.2, secção 11).
+- Falta à consulta. Prazo ultrapassado e escalada por níveis.
+
+==================================================================
+9. DIAGRAMAS DE ESTADO
+==================================================================
+- Estados do episódio (Nuno). Estados da marcação e da vaga (Avelino). Estados do caso (Alton).
+
+==================================================================
+10. BASES DE DADOS (cada responsável)
+==================================================================
+- Uma base e um utilizador por serviço; tabelas criadas pelo Hibernate a partir das entidades.
+- gestao_acesso_db (Avelino): regra_versao, episodio_prazo, vaga_disponivel, relogio, eventos_processados.
+- agendamento_db (Avelino): agenda, vaga, marcacao, eventos_processados.
+- Restantes: cada responsável.
+
+==================================================================
+11. QUALIDADE (Pedro)
+==================================================================
+- Testes: unitários (regras puras), @DataJpaTest, MockMvc; ponta a ponta com Postman.
+- Formato de erro comum; logs com traceId e sem dados pessoais; Actuator só /health e /metrics.
+- Descrição da API: Swagger (springdoc-openapi) por serviço. Não está nos slides: escolhido porque os docentes
+  pediram uma boa descrição da API e é gerado a partir do código.
+
+==================================================================
+12. MIGRAÇÃO DO SISTEMA ANTIGO (Alton)
+==================================================================
+- Tema 5 da UC: Strangler Fig, um serviço de cada vez, cópia de dados e ACL; nunca acesso à base do monólito.
+- Migração por CSV só se houver tempo.
+
+==================================================================
+13. CONCLUSÃO (todos)
+==================================================================
+13.1 Reflexão crítica
+13.2 GitHub e distribuição do trabalho (gráfico de contribuições) (Pedro)
+13.3 Trabalho futuro e melhorias
+- Spring Boot 4 (a Proposta indicava 4.1; ficou 3.5.16, versão das aulas; suporte gratuito terminou em 06/2026).
+- Flyway para versões do esquema (hoje ddl-auto, como nas aulas).
+- Outbox para não perder eventos se o RabbitMQ falhar entre a gravação e a publicação.
+- Índice parcial no PostgreSQL para "uma marcação AGENDADA por episódio" (hoje garantido no serviço).
+- Registo de acessos aos dados do utente (evento utente.consultado guardado no historico).
+- Testes de contrato entre serviços; circuit breaker (Resilience4j); tracing distribuído.
+
+==================================================================
+REFERÊNCIAS (todos, cada um junta as suas)
+==================================================================
+- Portaria n.º 153/2017; Lei n.º 15/2014. (completar com a bibliografia do grupo)
+
+==================================================================
+ANEXOS
+==================================================================
+A. Endpoints por serviço (secção 9 do Runbook_Grupo5_v2.2) e links do Swagger. (Pedro)
+B. Eventos (secção 10 do Runbook_Grupo5_v2.2). (Alton)
+C. Como arrancar o sistema no PC (Docker Compose e Minikube). (Avelino)

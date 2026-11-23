@@ -1,0 +1,15 @@
+#!/bin/sh
+# Bloqueia o push direto para o main.
+# Ativar uma vez em cada clone: git config core.hooksPath .githooks
+# Tudo entra no main por pull request, revisto por outro elemento.
+
+while read local_ref local_sha remote_ref remote_sha
+do
+    if [ "$remote_ref" = "refs/heads/main" ]; then
+        echo "Push direto para o main bloqueado." >&2
+        echo "Crie um branch feature/<servico>-<tema>, faça push dele e abra um pull request." >&2
+        exit 1
+    fi
+done
+
+exit 0

@@ -1,0 +1,14 @@
+# Fins de linha iguais em Windows e Linux: LF no repositório.
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+mvnw text eol=lf
+*.sh text eol=lf
+.githooks/* text eol=lf
+
+*.jar binary
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary
