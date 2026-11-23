@@ -1,6 +1,6 @@
 out
 .idea
-src/
+/src/
 .DS_Store
 
 # Maven builds
