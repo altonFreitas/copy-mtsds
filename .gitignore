@@ -1,12 +1,6 @@
 out
 .idea
-src/Aulas
-src/Exercicios
-src/_MTSDS__Proposta_de_Sistema_Grupo_05.pdf
-src/main.tex
-src/projeto_mtsds.cls
-src/referencia.bib
-src/Runbook_Grupo5_v2.1.md
+src/
 .DS_Store
 
 # Maven builds
