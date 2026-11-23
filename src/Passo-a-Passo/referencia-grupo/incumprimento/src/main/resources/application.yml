@@ -1,0 +1,80 @@
+# Configuração comum. Perfis: dev (por omissão, H2 em memória), docker e k8s (PostgreSQL).
+server:
+  port: ${PORT:8085}
+
+spring:
+  application:
+    name: garantia-acesso
+  profiles:
+    default: dev
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+  data:
+    web:
+      pageable:
+        default-page-size: 20
+        max-page-size: 100
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: ${RABBITMQ_USER:acesso}
+    password: ${RABBITMQ_PASSWORD:Grupo5}
+    listener:
+      simple:
+        acknowledge-mode: auto # ack só depois de o listener terminar sem erro
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3 # tentativas antes de ir para a Dead-Letter Queue
+          initial-interval: 1000
+          multiplier: 2.0
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+
+# Só health e metrics expostos (slide 02 avisa que expor tudo é um risco)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+
+# Configuração própria do serviço (lida com @Value nas classes de serviço).
+incumprimento:
+  # Feriados nacionais (AAAA-MM-DD, separados por vírgula): não contam como dias úteis (R6).
+  feriados: 2026-12-01,2026-12-08,2026-12-25,2027-01-01
+  transferencia:
+    # Dias que a outra instituição tem para responder a uma proposta de transferência.
+    prazo-resposta-dias: 5
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:garantia_acesso;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker,k8s
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}

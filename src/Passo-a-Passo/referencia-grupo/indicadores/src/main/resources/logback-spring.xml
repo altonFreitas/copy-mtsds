@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Logs de todos os serviços (RNF08): consola e ficheiro com rotação.
+     Cada linha leva o serviço, o traceId e o episodioId (MDC). Nunca registar nome nem NUS. -->
+<configuration>
+    <springProperty scope="context" name="SERVICO" source="spring.application.name" defaultValue="servico"/>
+    <property name="PADRAO"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [${SERVICO}] [trace=%X{traceId:-}] [episodio=%X{episodioId:-}] %logger{36} - %msg%n"/>
+    <property name="PASTA" value="${LOG_PATH:-logs}"/>
+
+    <appender name="CONSOLA" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${PADRAO}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="FICHEIRO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${PASTA}/${SERVICO}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${PASTA}/${SERVICO}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>200MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${PADRAO}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <springProfile name="dev">
+        <logger name="pt.estg.mtsds" level="DEBUG"/>
+    </springProfile>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLA"/>
+        <appender-ref ref="FICHEIRO"/>
+    </root>
+</configuration>

@@ -1,0 +1,48 @@
+# Infraestrutura local para o desenvolvimento (aula 03: PostgreSQL + pgAdmin; aula 05: RabbitMQ).
+# Arrancar:  docker compose up -d      Parar:  docker compose down      Apagar dados:  docker compose down -v
+services:
+
+  # PostgreSQL 17: uma única instância com UMA BASE DE DADOS e UM UTILIZADOR POR SERVIÇO (ver init-db.sql).
+  postgres:
+    image: postgres:17
+    container_name: postgres_server
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      # Volume nomeado: os dados sobrevivem a "docker compose down" (só "down -v" os apaga).
+      - pgdata:/var/lib/postgresql/data
+      # Os scripts desta pasta correm UMA vez, quando o volume está vazio (primeiro arranque).
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+
+  # pgAdmin: interface web para ver as tabelas (http://localhost:9999).
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "9999:80"
+    depends_on:
+      - postgres
+
+  # RabbitMQ com interface de gestão (http://localhost:15672, utilizador user / password 123).
+  rabbitmq:
+    image: rabbitmq:3.12.9-management
+    container_name: rabbit_container
+    hostname: rabbit_server
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: "123"
+    ports:
+      - "5672:5672"      # AMQP (os serviços ligam aqui)
+      - "15672:15672"    # interface de gestão
+    volumes:
+      - rabbitdata:/var/lib/rabbitmq
+
+volumes:
+  pgdata:
+  rabbitdata:

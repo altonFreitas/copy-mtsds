@@ -1,0 +1,22 @@
+# Configuração usada SÓ nos testes (substitui o application.yml principal durante os testes).
+spring:
+  application:
+    name: indicadores
+  datasource:
+    # H2 em memória em modo PostgreSQL: não precisa de Docker para correr os testes.
+    url: jdbc:h2:mem:indicadoresdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  rabbitmq:
+    listener:
+      simple:
+        # Não liga o listener ao RabbitMQ nos testes (não há broker).
+        auto-startup: false
+
+eureka:
+  client:
+    enabled: false

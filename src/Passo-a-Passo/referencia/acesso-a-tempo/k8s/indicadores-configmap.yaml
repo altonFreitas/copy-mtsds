@@ -1,0 +1,18 @@
+# ConfigMap: configuração NÃO sensível do serviço indicadores (aula 06: ConfigMap).
+# Cada chave vira uma VARIÁVEL DE AMBIENTE no contentor; o application.yml lê-as com ${NOME:valor}.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: indicadores-config
+  labels:
+    app: indicadores
+data:
+  # PostgreSQL e RabbitMQ correm FORA do cluster (Docker Compose no mesmo computador/VM).
+  # "host.minikube.internal" é o nome que o Minikube dá à máquina que o aloja.
+  DB_HOST: "host.minikube.internal"
+  DB_PORT: "5432"
+  DB_NAME: "indicadores_db"
+  RABBIT_HOST: "host.minikube.internal"
+  RABBIT_PORT: "5672"
+  # Eureka Server do grupo (Service ClusterIP). CONFIRMAR o nome do Service com quem o fizer.
+  EUREKA_URL: "http://eureka:8761/eureka/"

@@ -1,0 +1,59 @@
+# Deployment do serviço incumprimento (aula 06: Deployment). Descreve o ESTADO PRETENDIDO:
+# "quero 1 réplica desta imagem, com esta configuração, e verifica a saúde dela".
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: incumprimento-deployment
+  labels:
+    app: incumprimento
+spec:
+  replicas: 1                       # nº de Pods (réplicas). Mudar com: kubectl scale deployment ... --replicas=2
+  selector:
+    matchLabels:
+      app: incumprimento                       # quais os Pods geridos por este Deployment
+  template:                         # molde dos Pods
+    metadata:
+      labels:
+        app: incumprimento
+    spec:
+      containers:
+        - name: incumprimento
+          image: incumprimento:1.0           # imagem local carregada com "minikube image load"
+          imagePullPolicy: IfNotPresent   # não tentar descarregar de um registry se já existir localmente
+          ports:
+            - containerPort: 8085
+          envFrom:                  # injeta TODAS as chaves como variáveis de ambiente
+            - configMapRef:
+                name: incumprimento-config
+            - secretRef:
+                name: incumprimento-secret
+          env:
+            - name: JAVA_TOOL_OPTIONS   # a JVM usa no máximo 70% da memória do contentor
+              value: "-XX:MaxRAMPercentage=70"
+          resources:
+            requests:               # o mínimo que o Pod precisa (usado para o escalonamento)
+              cpu: "100m"
+              memory: "384Mi"
+            limits:                 # o máximo permitido; acima da memória o Pod é terminado
+              memory: "768Mi"
+          # startupProbe: dá tempo à aplicação para arrancar (até 30 x 5 s = 150 s) antes das outras sondas.
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            periodSeconds: 5
+            failureThreshold: 30
+          # livenessProbe: "o processo está vivo?" Se falhar, o Kubernetes REINICIA o Pod.
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            periodSeconds: 10
+            failureThreshold: 3
+          # readinessProbe: "está pronto a trabalhar?" Se falhar, o Pod fica fora de serviço (sem ser reiniciado).
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+            periodSeconds: 10
+            failureThreshold: 3

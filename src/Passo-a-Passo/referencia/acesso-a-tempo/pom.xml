@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Identificação do projeto (pom PAI). Os módulos filhos herdam daqui. -->
+    <groupId>com.acessoatempo</groupId>
+    <artifactId>acesso-a-tempo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>acesso-a-tempo</name>
+    <description>Acesso a Tempo - lista de espera e TMRG da consulta externa hospitalar (Grupo 5)</description>
+
+    <!-- Módulos (um por microserviço). O IntelliJ acrescenta aqui os que a Parte 1, 2 e 4 criarem. -->
+    <modules>
+        <module>incumprimento</module>
+        <module>indicadores</module>
+    </modules>
+
+    <!-- Propriedades: versões definidas num só sítio, para todos os módulos usarem as mesmas. -->
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <spring.boot.version>4.1.2</spring.boot.version>
+        <spring.cloud.version>2025.1.4</spring.cloud.version>
+        <lombok.version>1.18.48</lombok.version>
+        <modelmapper.version>3.2.8</modelmapper.version>
+        <spring.boot.maven.plugin.version>${spring.boot.version}</spring.boot.maven.plugin.version>
+    </properties>
+
+    <!-- dependencyManagement: só FIXA VERSÕES. Os filhos declaram a dependência sem <version>. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring.cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- dependencies: aqui ficam as dependências que TODOS os módulos recebem. -->
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>${modelmapper.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.maven.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <!-- Sem o spring-boot-starter-parent é preciso ligar o "repackage" ao build:
+                                 transforma o JAR normal num JAR EXECUTÁVEL (java -jar), necessário no Docker. -->
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <!-- Guarda o nome dos parâmetros nas classes: sem isto o Spring não sabe que
+                             @PathVariable Integer id corresponde a /{id} (não usamos o spring-boot-starter-parent). -->
+                        <parameters>true</parameters>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

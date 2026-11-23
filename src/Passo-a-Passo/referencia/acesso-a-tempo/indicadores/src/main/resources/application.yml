@@ -1,0 +1,50 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    # Nome com que o serviço se regista no Eureka e é encontrado pela Gateway (lb://indicadores).
+    name: indicadores
+
+  datasource:
+    # ${VARIAVEL:valor-por-omissao}: em Docker/Kubernetes a variável de ambiente sobrepõe-se ao valor local.
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:indicadores_db}
+    username: ${DB_USER:indicadores_user}
+    password: ${DB_PASSWORD:indicadores_pass}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # update: o Hibernate cria/atualiza as tabelas a partir das classes @Entity (como nas aulas).
+      ddl-auto: update
+    show-sql: true
+
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:user}
+    password: ${RABBIT_PASSWORD:123}
+    listener:
+      simple:
+        # Confirmação (ack) automática DEPOIS de o método do listener terminar sem erro.
+        acknowledge-mode: auto
+        # Se a mensagem falhar, NÃO volta para a fila: vai para a Dead-Letter (ver MQConfig).
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3          # 3 tentativas e depois Dead-Letter
+          initial-interval: 1000   # 1 segundo entre tentativas
+          multiplier: 2.0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # RNF09: só /health e /metrics.
+        include: health,metrics

@@ -1,0 +1,63 @@
+# Configuração comum. Perfis: dev (por omissão, H2 em memória), docker e k8s (PostgreSQL).
+server:
+  port: ${PORT:8086}
+
+spring:
+  application:
+    name: historico
+  profiles:
+    default: dev
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+  data:
+    web:
+      pageable:
+        default-page-size: 20
+        max-page-size: 100
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: ${RABBITMQ_USER:acesso}
+    password: ${RABBITMQ_PASSWORD:Grupo5}
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+
+# Só health e metrics expostos (slide 02 avisa que expor tudo é um risco)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:historico;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker,k8s
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
