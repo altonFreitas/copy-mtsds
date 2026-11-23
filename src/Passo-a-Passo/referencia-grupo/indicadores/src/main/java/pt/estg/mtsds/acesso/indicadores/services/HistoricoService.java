@@ -64,19 +64,14 @@ public class HistoricoService {
 					"Evento " + evento.getEventoId() + " não serializável: " + e.getMessage());
 		}
 
-		EventoHistorico linha = EventoHistorico.builder()
-				.eventoId(evento.getEventoId())
-				.routingKey(routingKey)
-				.episodioId(evento.getEpisodioId())
-				.traceId(evento.getTraceId())
-				.autor(evento.getAutor())
+		EventoHistorico linha = EventoHistorico.builder().eventoId(evento.getEventoId()).routingKey(routingKey)
+				.episodioId(evento.getEpisodioId()).traceId(evento.getTraceId()).autor(evento.getAutor())
 				.dataHoraEvento(evento.getDataHoraEvento() != null ? evento.getDataHoraEvento() : LocalDateTime.now())
-				.conteudo(conteudo)
-				.build();
+				.conteudo(conteudo).build();
 
 		historicoRepository.save(linha);
-		log.info("Evento guardado: routingKey={} episodio={} eventoId={}", routingKey,
-				evento.getEpisodioId(), evento.getEventoId());
+		log.info("Evento guardado: routingKey={} episodio={} eventoId={}", routingKey, evento.getEpisodioId(),
+				evento.getEventoId());
 	}
 
 	// ------------------------------------------------------------------------------------------

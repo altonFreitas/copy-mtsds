@@ -30,8 +30,8 @@ public class EventosListener {
 
 	@RabbitListener(queues = RabbitConfig.QUEUE)
 	public void onEvento(EventoMessage evento, @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) {
-		log.info("Evento recebido para o historico: routingKey={} episodio={} eventoId={}",
-				routingKey, evento.getEpisodioId(), evento.getEventoId());
+		log.info("Evento recebido para o historico: routingKey={} episodio={} eventoId={}", routingKey,
+				evento.getEpisodioId(), evento.getEventoId());
 		historicoService.guardar(evento, routingKey);
 	}
 }

@@ -21,8 +21,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Endpoints do serviço {@code historico} (Runbook v2.1, secção 9.6). Fase 1:
- * os três primeiros endpoints. Fase 2: /indicadores/... calculados a partir dos
+ * Endpoints do serviço {@code historico} (Runbook v2.1, secção 9.6). Fase 1: os
+ * três primeiros endpoints. Fase 2: /indicadores/... calculados a partir dos
  * eventos.
  */
 @RestController
@@ -37,16 +37,14 @@ public class HistoricoController {
 	@ApiResponse(responseCode = "404", description = "Nenhum evento para este episódio")
 	@GetMapping("/historico/episodios/{id}")
 	public ResponseEntity<List<EventoHistoricoDTO>> porEpisodio(@PathVariable Long id) {
-		return ResponseEntity.ok(
-				historicoService.porEpisodio(id).stream().map(this::paraDTO).toList());
+		return ResponseEntity.ok(historicoService.porEpisodio(id).stream().map(this::paraDTO).toList());
 	}
 
 	@Operation(summary = "Eventos por tipo e/ou período, paginados")
 	@ApiResponse(responseCode = "200", description = "Página de eventos")
 	@ApiResponse(responseCode = "400", description = "Parâmetros inválidos")
 	@GetMapping("/historico/eventos")
-	public ResponseEntity<PaginaDTO<EventoHistoricoDTO>> porTipoEPeriodo(
-			@RequestParam(required = false) String tipo,
+	public ResponseEntity<PaginaDTO<EventoHistoricoDTO>> porTipoEPeriodo(@RequestParam(required = false) String tipo,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
 			Pageable pageable) {
@@ -59,12 +57,11 @@ public class HistoricoController {
 	@ApiResponse(responseCode = "404", description = "Nenhum evento para este traceId")
 	@GetMapping("/historico/traces/{traceId}")
 	public ResponseEntity<List<EventoHistoricoDTO>> porTrace(@PathVariable String traceId) {
-		return ResponseEntity.ok(
-				historicoService.porTrace(traceId).stream().map(this::paraDTO).toList());
+		return ResponseEntity.ok(historicoService.porTrace(traceId).stream().map(this::paraDTO).toList());
 	}
 
 	private EventoHistoricoDTO paraDTO(EventoHistorico e) {
-		return new EventoHistoricoDTO(e.getEventoId(), e.getRoutingKey(), e.getEpisodioId(),
-				e.getTraceId(), e.getAutor(), e.getDataHoraEvento(), e.getConteudo());
+		return new EventoHistoricoDTO(e.getEventoId(), e.getRoutingKey(), e.getEpisodioId(), e.getTraceId(),
+				e.getAutor(), e.getDataHoraEvento(), e.getConteudo());
 	}
 }

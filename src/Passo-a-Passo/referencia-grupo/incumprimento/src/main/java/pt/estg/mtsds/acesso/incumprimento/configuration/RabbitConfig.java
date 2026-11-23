@@ -29,10 +29,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Este serviço é Producer E Consumer: publica 6 eventos na exchange do sistema
  * e consome 5. Declara a exchange, a fila, os bindings das routing keys que
  * consome, a Dead-Letter Exchange/Queue e o container factory com 3 tentativas.
- *
- * <p>No repositório do grupo, o {@code RabbitConfig} do {@code servico-modelo}
- * já declara a {@code DirectExchange} DLX e o {@code rabbitListenerContainerFactory};
- * cada serviço só precisa de declarar a sua fila, a DLQ e os bindings.
+ * * <p>
+ * No repositório do grupo, o {@code RabbitConfig} do {@code servico-modelo} já
+ * declara a {@code DirectExchange} DLX e o
+ * {@code rabbitListenerContainerFactory}; cada serviço só precisa de declarar a
+ * sua fila, a DLQ e os bindings.
  */
 @Configuration
 public class RabbitConfig {
@@ -53,8 +54,8 @@ public class RabbitConfig {
 	public static final String DLQ = "garantia-acesso.eventos.dlq";
 
 	/** Os 5 eventos que o serviço consome (Runbook v2.1, secção 9.5). */
-	public static final String[] ROUTING_KEYS = {"prazo.em-risco", "prazo.ultrapassado-previsto",
-			"prazo.ultrapassado", "consulta.agendada", "relogio.avancado"};
+	public static final String[] ROUTING_KEYS = {"prazo.em-risco", "prazo.ultrapassado-previsto", "prazo.ultrapassado",
+			"consulta.agendada", "relogio.avancado"};
 
 	@Bean
 	public TopicExchange exchange() {
@@ -103,12 +104,12 @@ public class RabbitConfig {
 	 * Ao fim das 3 tentativas, a exceção propaga-se, o Spring AMQP envia nack sem
 	 * requeue e o RabbitMQ encaminha a mensagem para a DLX → DLQ.
 	 *
-	 * <p>No repositório do grupo este bean está no {@code servico-modelo}; aqui
+	 * <p>
+	 * No repositório do grupo este bean está no {@code servico-modelo}; aqui
 	 * repetimo-lo para o projeto pessoal ser autónomo.
 	 */
 	@Bean
-	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
-			ConnectionFactory connectionFactory,
+	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory,
 			MessageConverter messageConverter) {
 
 		SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(3);

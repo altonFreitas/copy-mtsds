@@ -209,8 +209,7 @@ public class CasosService {
 		caso.setDataLimiteDiretor(diasUteis.adicionarDiasUteis(relogio.hoje(), DIAS_UTEIS_DIRETOR));
 		casosRepository.save(caso);
 
-		publisher.publicar("caso.diretor-alertado",
-				corpo(caso).dataLimiteDiretor(caso.getDataLimiteDiretor()).build());
+		publisher.publicar("caso.diretor-alertado", corpo(caso).dataLimiteDiretor(caso.getDataLimiteDiretor()).build());
 		return caso;
 	}
 

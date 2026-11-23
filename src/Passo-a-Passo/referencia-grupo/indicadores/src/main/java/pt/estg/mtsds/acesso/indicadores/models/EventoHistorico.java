@@ -53,8 +53,8 @@ public class EventoHistorico {
 	private LocalDateTime dataHoraEvento;
 
 	/**
-	 * Conteúdo completo do evento em JSON. Guardado como texto para não depender
-	 * do esquema dos outros serviços.
+	 * Conteúdo completo do evento em JSON. Guardado como texto para não depender do
+	 * esquema dos outros serviços.
 	 */
 	@Column(name = "conteudo", nullable = false, columnDefinition = "TEXT")
 	private String conteudo;

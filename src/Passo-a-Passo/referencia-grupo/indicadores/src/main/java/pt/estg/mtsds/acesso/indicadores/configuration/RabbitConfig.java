@@ -28,9 +28,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * routing key. Este serviço tem uma fila com binding {@code #} (todos os
  * eventos) e uma Dead-Letter Queue para as mensagens que falham 3 tentativas.
  *
- * <p>No repositório do grupo o {@code RabbitConfig} do {@code servico-modelo}
- * já declara a {@code DirectExchange} DLX e o {@code rabbitListenerContainerFactory};
- * cada serviço só precisa de declarar a sua fila, a DLQ e os bindings.
+ * <p>
+ * No repositório do grupo o {@code RabbitConfig} do {@code servico-modelo} já
+ * declara a {@code DirectExchange} DLX e o
+ * {@code rabbitListenerContainerFactory}; cada serviço só precisa de declarar a
+ * sua fila, a DLQ e os bindings.
  */
 @Configuration
 public class RabbitConfig {
@@ -97,12 +99,12 @@ public class RabbitConfig {
 	 * Ao fim das 3 tentativas, a exceção propaga-se, o Spring AMQP envia nack sem
 	 * requeue e o RabbitMQ encaminha a mensagem para a DLX → DLQ.
 	 *
-	 * <p>No repositório do grupo este bean está no {@code servico-modelo}; aqui
+	 * <p>
+	 * No repositório do grupo este bean está no {@code servico-modelo}; aqui
 	 * repetimo-lo para o projeto pessoal ser autónomo.
 	 */
 	@Bean
-	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
-			ConnectionFactory connectionFactory,
+	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory,
 			MessageConverter messageConverter) {
 
 		SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(3);

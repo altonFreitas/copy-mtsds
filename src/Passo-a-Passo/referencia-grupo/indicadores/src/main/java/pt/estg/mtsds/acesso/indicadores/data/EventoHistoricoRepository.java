@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Acesso à tabela {@code evento_historico}. É uma tabela append-only: nunca
- * há updates nem deletes neste repositório.
+ * Acesso à tabela {@code evento_historico}. É uma tabela append-only: nunca há
+ * updates nem deletes neste repositório.
  */
 public interface EventoHistoricoRepository extends JpaRepository<EventoHistorico, String> {
 
